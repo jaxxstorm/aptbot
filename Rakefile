@@ -26,7 +26,6 @@ task :create_or_update do
     KeyName:                "id_aws",
     SubnetID:               "subnet-d4412fb1",
     InstanceType:           "t2.micro",
-    Region:                 "eu-west-1",
     DesiredCapacity:        "1",
     MaxSize:                "1"
   }
@@ -35,7 +34,6 @@ task :create_or_update do
   parameters = {
     SubnetID:               "subnet-d4412fb1",
     ContainerVersion:       VERSION,
-    Region:                 "eu-west-1",
   }
   Stacker.create_or_update_stack(SERVICE_STACK, SERVICE_TEMPLATE, parameters, CLUSTER_STACK)
 
