@@ -1,7 +1,7 @@
 FROM ubuntu
 
 RUN apt-get update
-RUN apt-get -y install expect redis-server nodejs npm
+RUN apt-get -y install expect nodejs npm git
 
 RUN apt-get update && \
     apt-get install -y python-pip && \
@@ -23,17 +23,13 @@ USER	hubot
 WORKDIR /hubot
 
 # Install hubot
-RUN yo hubot --owner="Tatsu <inside@autoscout24.com>" --name="Tatsu" --description="Roll, roll, rollercoaster" --defaults
+RUN yo hubot --owner="Lee Briggs <lee@leebriggs.co.uk>" --name="aptbot" --description="A friendly neighbourhood bot" --defaults
 
 # Some adapters / scripts
-RUN npm install hubot-slack --save && npm install
+RUN npm install hubot-irc --save && npm install
 RUN npm install hubot-standup-alarm --save && npm install
-RUN npm install hubot-auth --save && npm install
 RUN npm install hubot-google-translate --save && npm install
-RUN npm install hubot-auth --save && npm install
-RUN npm install hubot-github --save && npm install
 RUN npm install hubot-alias --save && npm install
-RUN npm install hubot-gocd --save && npm install
 RUN npm install hubot-youtube --save && npm install
 
 
@@ -42,8 +38,6 @@ ADD hubot/hubot-scripts.json /hubot/
 ADD hubot/external-scripts.json /hubot/
 
 RUN npm install cheerio --save && npm install
-ADD hubot/scripts/hubot-leitwerk.coffee /hubot/scripts/
-ADD hubot/scripts/hubot-lunch.coffee /hubot/scripts/
 
 # And go
-CMD ["/bin/sh", "-c", "aws s3 cp --region eu-west-1 s3://pgarbe-secrets/env.sh .; . ./env.sh; bin/hubot --adapter slack"]
+CMD ["/bin/bash", "-c", "aws s3 cp --region eu-west-1 s3://lbriggs-aptbot/env.sh .; cat ./env.sh; . ./env.sh ; bin/hubot --adapter irc"]
