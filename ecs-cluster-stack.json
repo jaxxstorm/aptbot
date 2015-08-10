@@ -1,0 +1,8 @@
+[{
+  "name": "aptbot",
+  "image": "jaxxstorm/aptbot:v_BUILD_NR",
+  "cpu": 10,
+  "memory": 250,
+  "essential": true,
+  "environment": []
+}]
