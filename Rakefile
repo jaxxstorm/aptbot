@@ -33,7 +33,7 @@ task :create_or_update do
 
   parameters = {
     SubnetID:               "subnet-d4412fb1",
-    ContainerVersion:       VERSION,
+    ContainerVersion:       VERSION
   }
   Stacker.create_or_update_stack(SERVICE_STACK, SERVICE_TEMPLATE, parameters, CLUSTER_STACK)
 
