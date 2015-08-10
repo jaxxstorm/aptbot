@@ -28,12 +28,8 @@ RUN yo hubot --owner="Lee Briggs <lee@leebriggs.co.uk>" --name="aptbot" --descri
 # Some adapters / scripts
 RUN npm install hubot-irc --save && npm install
 RUN npm install hubot-standup-alarm --save && npm install
-RUN npm install hubot-auth --save && npm install
 RUN npm install hubot-google-translate --save && npm install
-RUN npm install hubot-auth --save && npm install
-RUN npm install hubot-github --save && npm install
 RUN npm install hubot-alias --save && npm install
-RUN npm install hubot-gocd --save && npm install
 RUN npm install hubot-youtube --save && npm install
 
 
@@ -44,4 +40,4 @@ ADD hubot/external-scripts.json /hubot/
 RUN npm install cheerio --save && npm install
 
 # And go
-CMD ["/bin/sh", "-c", "aws s3 cp --region eu-west-1 s3://lbriggs-aptbot/env.sh .; . ./env.sh; bin/hubot --adapter irc"]
+CMD ["/bin/bash", "-c", "aws s3 cp --region eu-west-1 s3://lbriggs-aptbot/env.sh .; cat ./env.sh; . ./env.sh ; bin/hubot --adapter irc"]
