@@ -9,7 +9,7 @@ require 'autostacker24'
 VERSION           = ENV['CIRCLE_BUILD_NUM'] || ENV['VERSION']
 SANDBOX           = ENV['SANDBOX'] || ENV['GO_JOB_NAME'].nil? && `whoami`.strip
 
-SERVICE           = 'tatsu-hubot'
+SERVICE           = 'aptbot'
 SERVICE_STACK     = SANDBOX ? "#{SANDBOX}-#{SERVICE}" : SERVICE
 SERVICE_TEMPLATE  = File.read("#{SERVICE}-stack.json")
 
@@ -23,8 +23,8 @@ task :create_or_update do
   fail('VERSION missing') unless VERSION #TODO: determine latest green version for sandboxed deploy
 
   parameters = {
-    KeyName:                "pgarbe-key-pair-euwest1",
-    SubnetID:               "subnet-7f885626",
+    KeyName:                "id_aws",
+    SubnetID:               "subnet-d4412fb1",
     InstanceType:           "t2.micro",
     DesiredCapacity:        "1",
     MaxSize:                "1"
@@ -32,7 +32,7 @@ task :create_or_update do
   Stacker.create_or_update_stack(CLUSTER_STACK, CLUSTER_TEMPLATE, parameters)
 
   parameters = {
-    SubnetID:               "subnet-7f885626",
+    SubnetID:               "subnet-d4412fb1",
     ContainerVersion:       VERSION
   }
   Stacker.create_or_update_stack(SERVICE_STACK, SERVICE_TEMPLATE, parameters, CLUSTER_STACK)
