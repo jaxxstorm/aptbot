@@ -29,4 +29,5 @@ deployment:
     commands:
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
       - docker push jaxxstorm/aptbot:v_$CIRCLE_BUILD_NUM
-      - bundle exec rake create_or_update
+      - bundle exec rake create_or_update:
+          timeoutL 1200

@@ -20,7 +20,7 @@ CLUSTER_TEMPLATE  = File.read("#{CLUSTER}-stack.json")
 desc "create or update service #{SERVICE} stack"
 task :create_or_update do
 
-  fail('VERSION missing') unless VERSION #TODO: determine latest green version for sandboxed deploy
+  #fail('VERSION missing') unless VERSION #TODO: determine latest green version for sandboxed deploy
 
   parameters = {
     KeyName:                "id_aws",
@@ -33,7 +33,7 @@ task :create_or_update do
 
   parameters = {
     SubnetID:               "subnet-d4412fb1",
-    ContainerVersion:       VERSION
+    #ContainerVersion:       VERSION
   }
   Stacker.create_or_update_stack(SERVICE_STACK, SERVICE_TEMPLATE, parameters, CLUSTER_STACK)
 
