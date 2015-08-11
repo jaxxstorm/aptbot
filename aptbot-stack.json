@@ -120,7 +120,7 @@
                      "s3:PutObjectVersionAcl"
                    ],
                    "Resource": [
-                     "arn:aws:s3:::lbriggs-hubot/brain-dump.json"
+                     "arn:aws:s3:::lbriggs-aptbot/brain-dump.json"
                    ]
                  }
               ]
