@@ -3,7 +3,7 @@
   "containerDefinitions": [
     {
       "name": "aptbot",
-      "image": "jaxxstorm/aptbot:v_BUILD_NR",
+      "image": "jaxxstorm/aptbot",
       "cpu": "10",
       "memory": "250",
       "entryPoint": [],

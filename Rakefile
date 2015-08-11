@@ -4,77 +4,58 @@ require 'json'
 require 'open-uri'
 require 'aws-sdk-core'
 require 'set'
+require 'autostacker24'
 
-SERVICE       = 'aptbot'
-TASK_FAMILY   = 'aptbot'
-CLUSTER       = ENV['CLUSTER'] || 'default'
-VERSION       = ENV['CIRCLE_BUILD_NUM'] || 0
-DESIRED_COUNT = 1
+VERSION           = ENV['CIRCLE_BUILD_NUM'] || ENV['VERSION']
+SANDBOX           = ENV['SANDBOX'] || ENV['GO_JOB_NAME'].nil? && `whoami`.strip
 
-TASK_TEMPLATE = "#{SERVICE}-task.json"
-TASK_FILE     = "#{SERVICE}-task-v#{VERSION}.json"
+SERVICE           = 'aptbot'
+SERVICE_STACK     = SANDBOX ? "#{SANDBOX}-#{SERVICE}" : SERVICE
+SERVICE_TEMPLATE  = File.read("#{SERVICE}-stack.json")
 
-# use ENV['AWS_ACCESS_KEY_ID'] and ENV['AWS_SECRET_ACCESS_KEY'] if you don't want to set credentials by code
-def credentials=(credentials)
-  unless credentials == @credentials
-    @lazy_cloud_formation = nil
-    @credentials = credentials
-  end
-end
+CLUSTER           = 'ecs-cluster'
+CLUSTER_STACK     = SANDBOX ? "#{SANDBOX}-#{CLUSTER}" : CLUSTER
+CLUSTER_TEMPLATE  = File.read("#{CLUSTER}-stack.json")
 
-def region=(region) # use ENV['AWS_REGION'] or ENV['AWS_DEFAULT_REGION']
-  unless region == @region
-    @lazy_cloud_formation = nil
-    @region = region
-  end
-end
-
-def ecs # lazy ECS client
-  unless @ecs
-    params = {}
-    params[:credentials] = @credentials if @credentials
-    params[:region] = @region if @region
-    @lazy_ecs = Aws::ECS::Client.new(params)
-  end
-  @lazy_ecs
-end
-
-def find_service(cluster, service)
-  status = ecs.describe_services(cluster: cluster, services: [service]).services.first.status
-  puts "SERVICE: " + status
-  status == "ACTIVE"
-end
-
-
-desc "create or update service #{SERVICE}"
+desc "create or update service #{SERVICE} stack"
 task :create_or_update do
 
-  # Create a new task definition for this build
-  taskDefintion = File.read(TASK_TEMPLATE)
-  taskDefintion = taskDefintion.sub(/BUILD_NR/, VERSION)
+  fail('VERSION missing') unless VERSION #TODO: determine latest green version for sandboxed deploy
 
-  result = ecs.register_task_definition(family: TASK_FAMILY, container_definitions: JSON.parse(taskDefintion))
-  fullQualifiedTaskDefinition = "#{TASK_FAMILY}:#{result.task_definition.revision}"
+  parameters = {
+    KeyName:                "id_aws",
+    SubnetID:               "subnet-d4412fb1",
+    InstanceType:           "t2.micro",
+    DesiredCapacity:        "1",
+    MaxSize:                "1"
+  }
+  Stacker.create_or_update_stack(CLUSTER_STACK, CLUSTER_TEMPLATE, parameters)
 
-  if find_service(CLUSTER, SERVICE)
-    puts "UPDATE SERVICE #{SERVICE} on cluster #{CLUSTER} using task definition #{fullQualifiedTaskDefinition}"
-    result = ecs.update_service(cluster: CLUSTER, service: SERVICE, task_definition: fullQualifiedTaskDefinition, desired_count: DESIRED_COUNT)
-  else
-    puts "CREATE SERVICE #{SERVICE} on cluster #{CLUSTER} using task definition #{fullQualifiedTaskDefinition}"
-    ecs.create_service(cluster: CLUSTER, service_name: SERVICE, task_definition: fullQualifiedTaskDefinition, desired_count: DESIRED_COUNT)
-  end
+  parameters = {
+    SubnetID:               "subnet-d4412fb1",
+    ContainerVersion:       VERSION
+  }
+  Stacker.create_or_update_stack(SERVICE_STACK, SERVICE_TEMPLATE, parameters, CLUSTER_STACK)
+
 end
 
+desc 'validate template'
+task :validate do
+  Stacker.validate_template(CLUSTER_TEMPLATE)
+  Stacker.validate_template(SERVICE_TEMPLATE)
+end
 
-# desc "delete service #{SERVICE}"
-# task :delete do
-#
-#   aws ecs delete-service
-#     --cluster CLUSTER
-#     --service ${SERVICE_NAME}
-#
-# end
+desc 'dump template'
+task :dump do
+  puts JSON.pretty_generate(JSON(Stacker.template_body(CLUSTER_TEMPLATE)))
+  puts JSON.pretty_generate(JSON(Stacker.template_body(SERVICE_TEMPLATE)))
+end
 
+desc 'delete stack'
+task :delete do
+  Stacker.delete_stack(SERVICE_STACK)
+  Stacker.delete_stack(CLUSTER_STACK)
+end
 
 task :default do
   puts
