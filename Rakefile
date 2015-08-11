@@ -29,6 +29,8 @@ task :create_or_update do
     DesiredCapacity:        "1",
     MaxSize:                "1"
   }
+  puts VERSION
+  puts CLUSTER_STACK
   Stacker.create_or_update_stack(CLUSTER_STACK, CLUSTER_TEMPLATE, parameters)
 
   parameters = {
